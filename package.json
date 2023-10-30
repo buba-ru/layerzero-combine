@@ -1,0 +1,29 @@
+{
+  "name": "stargate-bridge-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/evgeny32/stargate-bridge-bot.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/evgeny32/stargate-bridge-bot/issues"
+  },
+  "homepage": "https://github.com/evgeny32/stargate-bridge-bot#readme",
+  "dependencies": {
+    "@moralisweb3/common-evm-utils": "^2.22.2",
+    "colors": "^1.4.0",
+    "ethers": "5.7.2",
+    "json-2-csv": "^4.0.0",
+    "log4js": "^6.9.1",
+    "moralis": "^2.22.2",
+    "prompts": "^2.4.2"
+  }
+}
