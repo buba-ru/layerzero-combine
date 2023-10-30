@@ -228,20 +228,17 @@ class Executor {
         logger.info(`[${task.chain}] Mint ${task.amount} MERK ...`.bgBlue);
         await utils.checkL1GasPrice(task.chain, null, this.#config, logger);
 
-        const merkly = new Merkly(task.chain, this.#pk);
-        let mintReceipt;
+        const merkly = new Merkly(this.#config, task.chain, this.#pk);
+
+        let mintResult;
         do {
-            mintReceipt = await merkly.mint(task.amount, logger);
-            if (mintReceipt.status) {
-                logger.info(`Mint transaction is confirmed`);
-                await utils.timeout(utils.getRandomInt(10, 20));
-            } else {
-                logger.error(`Mint transaction ${mintReceipt.transactionHash} is failed`);
+            mintResult = await merkly.mint(task.amount, logger);
+            if (!mintResult) {
                 if (!await utils.userConfirm()) {
                     process.exit(-1);
-                } 
+                }                   
             }
-        } while (!mintReceipt.status);
+        } while (!mintResult);
 
         await utils.timeout(utils.getRandomInt(...this.#config.sleep_between_tasks), true);
     }
@@ -256,20 +253,17 @@ class Executor {
         logger.info(`[${chain.src} → ${chain.dst}] Bridge 1 MERK ...`.bgBlue);
         await utils.checkL1GasPrice(chain.src, chain.dst, this.#config, logger);
 
-        const merkly = new Merkly(chain.src, this.#pk);
-        let bridgeReceipt;
+        const merkly = new Merkly(this.#config, chain.src, this.#pk);
+
+        let bridgeResult;
         do {
-            bridgeReceipt = await merkly.bridge(chain.dst, logger);
-            if (bridgeReceipt.status) {
-                logger.info(`Bridge transaction is confirmed`);
-                await utils.timeout(utils.getRandomInt(10, 20));
-            } else {
-                logger.error(`Bridge transaction ${mintReceipt.transactionHash} is failed`);
+            bridgeResult = await merkly.bridge(chain.dst, logger);
+            if (!bridgeResult) {
                 if (!await utils.userConfirm()) {
                     process.exit(-1);
-                }
+                }                   
             }
-        } while (!bridgeReceipt.status);
+        } while (!bridgeResult);
 
         await utils.timeout(utils.getRandomInt(...this.#config.sleep_between_tasks), true);
     }
