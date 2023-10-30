@@ -1,5 +1,5 @@
 {
-  "name": "stargate-bridge-bot",
+  "name": "layerzero-combine",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/evgeny32/stargate-bridge-bot.git"
+    "url": "git+https://github.com/buba-ru/layerzero-combine.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/evgeny32/stargate-bridge-bot/issues"
+    "url": "https://github.com/buba-ru/layerzero-combine/issues"
   },
-  "homepage": "https://github.com/evgeny32/stargate-bridge-bot#readme",
+  "homepage": "https://github.com/buba-ru/layerzero-combine#readme",
   "dependencies": {
     "@moralisweb3/common-evm-utils": "^2.22.2",
     "colors": "^1.4.0",
