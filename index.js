@@ -59,7 +59,8 @@ const shuffle = (array) => {
         console.log(`[${progress}] ${address} > Start`.bgMagenta);
         const executor = new Executor(pk[i], config);
         for (let k = 0; k < taskList.length; k++) {
-            await processTask(JSON.parse(JSON.stringify(taskList[k])), executor);  
+            await processTask(JSON.parse(JSON.stringify(taskList[k])), executor);
+            await utils.timeout(utils.getRandomInt(...config.sleep_between_accs), true);
         }
 
         console.log(`[${progress}] ${address} > Finish`.bgMagenta);
