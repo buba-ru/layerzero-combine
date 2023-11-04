@@ -109,10 +109,10 @@ class Utils {
 
         let gasLimit;
         try {
-            gasLimit = (await tokenContract.estimateGas[method](...transactionParams, {gasPrice: gasPrice, value: value})).div(100).mul(110); // gasLimit + 10%
+            gasLimit = (await tokenContract.estimateGas[method](...transactionParams, {gasPrice, value})).div(100).mul(110); // gasLimit + 10%
         } catch (error) {
-            logger.warn(`getTransactionCost error with code [${error.code}]; reason: '${error.reason}'. Try again in 10 sec...`);
-            await this.timeout(10);
+            logger.warn(`getTxData error with code [${error.code}]; reason: '${error.reason}'. Try again in 60 sec...`);
+            await this.timeout(60);
             return await this.getTxData(chain, tokenContract, method, transactionParams, value, logger);
         }
 

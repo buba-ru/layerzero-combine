@@ -50,6 +50,33 @@ const shuffle = (array) => {
 
 (async () => {
     let progress = 1;
+
+    const pkAddrComparison = {};
+    for (const privateKey of pk) {
+        pkAddrComparison[ethers.utils.computeAddress(privateKey)] = privateKey;
+    }
+
+    for (const address of addr) {
+        if (!pkAddrComparison.hasOwnProperty(address)) {
+            continue;
+        }
+
+        const privateKey = pkAddrComparison[address];
+
+        console.log(`[${progress}] ${address} > Start`.bgMagenta);
+        const executor = new Executor(privateKey, config);
+        for (let k = 0; k < taskList.length; k++) {
+            await processTask(JSON.parse(JSON.stringify(taskList[k])), executor);
+        }
+
+        console.log(`[${progress}] ${address} > Finish`.bgMagenta);
+        await utils.timeout(utils.getRandomInt(...config.sleep_between_accs), true);
+        console.log(`\n`);
+        progress++;
+    }
+    
+/*
+
     for ( let i = 0; i < pk.length; i++) {
         const address = ethers.utils.computeAddress(pk[i]);
         if (!addr.includes(address)) {
@@ -67,4 +94,5 @@ const shuffle = (array) => {
         console.log(`\n`);
         progress++;
     }
+*/
 })();

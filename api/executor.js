@@ -10,6 +10,7 @@ const Merkly = require('./merkly');
 const Pancakeswap = require('./puncakeswap');
 const HarmonyBridge = require('./harmonybridge');
 const TokenTransfer = require('./token_transfer');
+const Holograph = require('./holograph');
 const stgRouters = require('../constants/stargate/stargate.js');
 const harmonyRouters = require('../constants/harmony/harmony.js');
 const lzEndpoints = require('../constants/layerzero_endpoints.js');
@@ -258,6 +259,52 @@ class Executor {
         let bridgeResult;
         do {
             bridgeResult = await merkly.bridge(chain.dst, logger);
+            if (!bridgeResult) {
+                if (!await utils.userConfirm()) {
+                    process.exit(-1);
+                }                   
+            }
+        } while (!bridgeResult);
+
+        await utils.timeout(utils.getRandomInt(...this.#config.sleep_between_tasks), true);
+    }
+
+    // {action: 'holograph_mint', chain: 'polygon', contract: '0x2c4bd4e25d83285f417e26a44069f41d1a8ad0e7', quantity: 1}
+    holograph_mint = async (task) => {
+        logger.info(`[${task.chain}] Mint ${task.quantity} Holograph NFT`.bgBlue);
+        await utils.checkL1GasPrice(task.chain, null, this.#config, logger);
+
+        const holograph = new Holograph(this.#config, task.chain, this.#pk);
+
+        let mintResult;
+        do {
+            mintResult = await holograph.mint(task.contract, task.quantity, logger);
+            if (!mintResult) {
+                if (!await utils.userConfirm()) {
+                    process.exit(-1);
+                }                   
+            }
+        } while (!mintResult);
+
+        await utils.timeout(utils.getRandomInt(...this.#config.sleep_between_tasks), true);
+        
+    }
+
+    // {action: 'holograph_bridge', chain: 'polygon:avalanche', contract: '0x2c4bd4e25d83285f417e26a44069f41d1a8ad0e7'}
+    holograph_bridge = async (task) => {
+        const chain = {
+            src: task.chain.split(':')[0],
+            dst: task.chain.split(':')[1],
+        }
+
+        logger.info(`[${chain.src} → ${chain.dst}] Bridge Holograph NFT`.bgBlue);
+        await utils.checkL1GasPrice(task.chain, null, this.#config, logger);
+
+        const holograph = new Holograph(this.#config, chain.src, this.#pk);
+
+        let bridgeResult;
+        do {
+            bridgeResult = await holograph.bridge(chain.dst, task.contract, logger);
             if (!bridgeResult) {
                 if (!await utils.userConfirm()) {
                     process.exit(-1);
