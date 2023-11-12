@@ -109,8 +109,8 @@ class Stargate {
 
         const transactionParams = [
             chain_id[dstChain],
-            pool_id[this.#srcToken],
-            pool_id[dstToken],
+            pool_id[this.#srcChain][this.#srcToken],
+            pool_id[dstChain][dstToken],
             this.#wallet.address,
             amount,
             minAmountLD,
