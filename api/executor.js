@@ -9,6 +9,7 @@ const Stargate = require('./stargate');
 const Merkly = require('./merkly');
 const Pancakeswap = require('./puncakeswap');
 const HarmonyBridge = require('./harmonybridge');
+const CakeBridge = require('./cakebridge');
 const TokenTransfer = require('./token_transfer');
 const Holograph = require('./holograph');
 const stgRouters = require('../constants/stargate/stargate.js');
@@ -314,6 +315,41 @@ class Executor {
 
         await utils.timeout(utils.getRandomInt(...this.#config.sleep_between_tasks), true);
     }
+
+    // {action: 'cake_bridge', chain: 'bsc:opbnb'}
+    cake_bridge = async (task) => {
+        const chain = {
+            src: task.chain.split(':')[0],
+            dst: task.chain.split(':')[1]
+        }
+
+        logger.info(`[${chain.src} → ${chain.dst}] Bridge CAKE token`.bgBlue);
+
+        const cakeBridge = new CakeBridge(this.#config, chain.src, this.#pk);
+
+        let approveResult;
+        do {
+            approveResult = await cakeBridge.approve(logger);
+            if (!approveResult) {
+                if (!await utils.userConfirm()) {
+                    process.exit(-1);
+                }
+            }
+        } while (!approveResult);
+
+        let bridgeResult;
+        do {
+            bridgeResult = await cakeBridge.bridge(chain.dst, logger);
+            if (!bridgeResult) {
+                if (!await utils.userConfirm()) {
+                    process.exit(-1);
+                }
+            }
+        } while (!bridgeResult);
+   
+        await utils.timeout(utils.getRandomInt(...this.#config.sleep_between_tasks), true);
+    }
+
 }
 
 module.exports = Executor;

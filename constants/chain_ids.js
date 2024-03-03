@@ -33,4 +33,5 @@ module.exports = {
     opbnb: 0,
     astar: 0,
     aurora: 0,
+    opbnb: 202,
 }

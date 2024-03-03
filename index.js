@@ -37,8 +37,6 @@ const processTask = async (task, executor) => {
             await processTask(task, executor);
         }
     }
-
-    
 }
 
 const shuffle = (array) => {
@@ -74,25 +72,4 @@ const shuffle = (array) => {
         console.log(`\n`);
         progress++;
     }
-    
-/*
-
-    for ( let i = 0; i < pk.length; i++) {
-        const address = ethers.utils.computeAddress(pk[i]);
-        if (!addr.includes(address)) {
-            continue;
-        }
-
-        console.log(`[${progress}] ${address} > Start`.bgMagenta);
-        const executor = new Executor(pk[i], config);
-        for (let k = 0; k < taskList.length; k++) {
-            await processTask(JSON.parse(JSON.stringify(taskList[k])), executor);
-            await utils.timeout(utils.getRandomInt(...config.sleep_between_accs), true);
-        }
-
-        console.log(`[${progress}] ${address} > Finish`.bgMagenta);
-        console.log(`\n`);
-        progress++;
-    }
-*/
 })();
