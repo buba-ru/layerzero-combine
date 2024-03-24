@@ -26,34 +26,63 @@ class Holograph {
     }
     
     mint = async (contract, quantity, logger) => {
-        const holograph = new ethers.Contract(contract, [
+        const nftContract = new ethers.Contract(contract,
+            [
                 'function purchase(uint256) payable',
+                'function getHolograph() view returns (address)',
                 'function getSourceContract() view returns (address)',
+                
             ],
             this.#wallet);
-        
-        const srcContractAddr = await holograph.getSourceContract();
-        const srcContract = new ethers.Contract(srcContractAddr, [
-                'function getHolographDropERC721Source() view returns (address)',
-            ],
+        const holographAddr = await nftContract.getHolograph();
+        const srcContractAddr = await nftContract.getSourceContract();
+
+        const holographContract = new ethers.Contract(holographAddr,
+            ['function getTreasury() view returns (address)'],
+            this.#provider);
+        const holographTreasuryProxy = await holographContract.getTreasury();
+
+        const holographTreasuryProxyContract = new ethers.Contract(holographTreasuryProxy,
+            ['function getTreasury() view returns (address)'],
+            this.#provider);
+        const holographTreasury = await holographTreasuryProxyContract.getTreasury();
+
+        const holographTreasuryContract = new ethers.Contract(holographTreasury,
+            ['function getHolographMintFee() view returns (uint256)'],
+            this.#provider);  
+        const mintFeeUSD = await holographTreasuryContract.getHolographMintFee();
+
+        const srcContract = new ethers.Contract(srcContractAddr,
+            ['function getHolographDropERC721Source() view returns (address)'],
+            this.#provider);
+        const ERC721Source = await srcContract.getHolographDropERC721Source();
+
+        const ERC721SourceContract = new ethers.Contract(ERC721Source,
+            ['function dropsPriceOracle() view returns (address)'],
+            this.#provider);
+        const dropsPriceOracleProxy = await ERC721SourceContract.dropsPriceOracle();
+
+        const dropsPriceOracleProxyContract = new ethers.Contract(dropsPriceOracleProxy,
+            ['function getDropsPriceOracle() view returns (address)'],
+            this.#provider);
+        const dropsPriceOracle = await dropsPriceOracleProxyContract.getDropsPriceOracle();
+
+        const dropsPriceOracleContract = new ethers.Contract(dropsPriceOracle,
+            ['function convertUsdToWei(uint256) view returns (uint256)'],
             this.#provider);
 
-        const holographERC721SrcAddr = await srcContract.getHolographDropERC721Source();
-        const holographERC721Contract = new ethers.Contract(holographERC721SrcAddr, [
-                'function getHolographFeeWei(uint256) view returns (uint256)'
-            ],
-            this.#provider);
-        
-        const value = (await holographERC721Contract.getHolographFeeWei(quantity)).div(100).mul(105);
+        const mintFeeWei = await dropsPriceOracleContract.convertUsdToWei(mintFeeUSD);
 
+        const value = mintFeeWei.div(100).mul(105);
+        
         const transactionParams = [quantity];
 
         const {
             gasPrice,
             gasLimit,
             transactionCost
-        } = await utils.getTxData(this.#chain, holograph, 'purchase', transactionParams, value, logger);
-        
+        } = await utils.getTxData(this.#chain, nftContract, 'purchase', transactionParams, value, logger);
+
         const totalCosts = transactionCost.add(value);
         const nativeBalance = await this.#provider.getBalance(this.#wallet.address);
         if (totalCosts.gt(nativeBalance)) {
@@ -65,7 +94,7 @@ class Holograph {
         let mintReciept;
         do {
             try {  
-                const tx = await holograph.purchase(...transactionParams, {
+                const tx = await nftContract.purchase(...transactionParams, {
                         gasPrice,
                         gasLimit,
                         value,
@@ -89,7 +118,7 @@ class Holograph {
         } else {
             logger.error(`Mint transaction ${mintReciept.transactionHash} is failed`);
         }
-
+        
         return mintReciept.status;
     }
 
@@ -106,7 +135,7 @@ class Holograph {
         };
 
         const nftScan = new NftscanEvm({
-            apiKey: '9Xo2ApaYyx0LhEeblV3v2MpT',
+            apiKey: 'p217uAWiiXJHQNj6HiLk7FK0',
             chain: nftScanChain[this.#chain],
         });        
 
@@ -148,7 +177,7 @@ class Holograph {
             messageFee = await bridge.getMessageFee(hlgChainId[dstChain], 0, dstChainGasPrice, bridgeOutPayload);
         } catch (error) {
             logger.warn(`getMessageFee error with code [${error.code}]; reason: '${error.reason}'. Try again in 60 sec...`);
-            await this.timeout(60);
+            await utils.timeout(60);
             return await this.bridge(dstChain, contract, logger);
         }
 
@@ -204,7 +233,7 @@ class Holograph {
         } else {
             logger.error(`Bridge transaction ${bridgeReceipt.transactionHash} is failed`);
         }
-
+        
         return bridgeReceipt.status;
     }
 }

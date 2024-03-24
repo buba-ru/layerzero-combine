@@ -17,15 +17,15 @@ class Okx {
         const method = 'GET';
         const endpoint = '/api/v5/asset/balances';
         const data = {ccy: this.#coin};
-
+        
         const resp = await api.request(method, endpoint, data, api_id);
         if (resp.code == '0') {
             return +resp.data[0].availBal;
         } else {
+            console.log(resp.msg);
             await timeout(10 * 1000);
             return await this.#getCoinBalance(api_id);
-        }
-        
+        }        
     }
 
     #getCoinInfo = async (api_id) => {
@@ -184,8 +184,8 @@ class Okx {
         }
     }
 
-    topUpAddress = async (address, min, max) => { 
-        const balance = await this.#getCoinBalance( 0);
+    topUpAddress = async (address, min, max) => {
+        const balance = await this.#getCoinBalance(0);
         const tokenInfo = await this.#getCoinInfo(0);
         const topUpAmount = this.#getRandomDecimal(min, max, tokenInfo.withdrawal_precision);
         

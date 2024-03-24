@@ -5,4 +5,5 @@ module.exports = {
     avalanche: 3,
     bsc: 2,
     ethereum: 1,
+    base: 76,
 }

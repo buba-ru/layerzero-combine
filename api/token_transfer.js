@@ -21,7 +21,6 @@ class TokenTransfer {
         
         const provider = new ethers.providers.JsonRpcProvider(rpc[this.chain].url, rpc[this.chain].chain_id);
         const wallet = new ethers.Wallet(privateKey, provider);
-        const gasPrice = await provider.getGasPrice();
         const tokenData = await utils.getTokenData(this.chain, this.token, address)
         const decimals = tokenData.decimals;
         const amount = tokenData.balance;
@@ -29,17 +28,23 @@ class TokenTransfer {
         logger.info(`Transfer ${ethers.utils.formatUnits(amount, decimals)} ${this.token} ${address.substring(address.length - 5)} → ${okx_addr.substring(okx_addr.length - 5)} ...`.bgBlue);
         
         const balance = await provider.getBalance(address);
-        const estimatedSpend = gasPrice.mul(tokens[this.chain][this.token].gas_limit);
-        if (estimatedSpend.gt(balance)) {
+        const tokenContract = new ethers.Contract(tokens[this.chain][this.token].contract, tokens[this.chain][this.token].abi, wallet);
+
+        const {
+            gasPrice,
+            gasLimit,
+            transactionCost
+        } = await utils.getTxData(this.chain, tokenContract, 'transfer', [okx_addr, amount], 0, logger);
+
+        if (transactionCost.gt(balance)) {
             logger.warn(`Estimated spend ${ethers.utils.formatUnits(estimatedSpend, 18)} > balance ${ethers.utils.formatUnits(balance, 18)}. Try again in 60 sec ...`);
             await utils.timeout(60);
-            return await this.transfer(privateKey);
+            return await this.transfer(privateKey, logger);
         }
 
-        const tokenContract = new ethers.Contract(tokens[this.chain][this.token].contract, tokens[this.chain][this.token].abi);
-        const tx = await tokenContract.connect(wallet).transfer(okx_addr, amount, {
-            gasPrice: gasPrice,
-            gasLimit: tokens[this.chain][this.token].gas_limit,
+        const tx = await tokenContract.transfer(okx_addr, amount, {
+            gasPrice,
+            gasLimit,
         });
         const receipt = await tx.wait();
 

@@ -102,9 +102,10 @@ class Stargate {
         const stargate = new ethers.Contract(stgRouters[this.#srcChain].contract, stgRouters[this.#srcChain].abi, this.#wallet);
 
         let lzTxParams = [0, 0, '0x0000000000000000000000000000000000000001'];
+        let dstGas;
         if (dstGasForFee > 0) {
-            dstGasForFee = ethers.utils.parseUnits(utils.getRandomDecimal(dstGasForFee, dstGasForFee * 1.02, 18).toString(), 18);
-            lzTxParams = [0, dstGasForFee, this.#wallet.address,];
+            dstGas = ethers.utils.parseUnits(utils.getRandomDecimal(dstGasForFee, dstGasForFee * 1.02, 18).toString(), 18);
+            lzTxParams = [0, dstGas, this.#wallet.address,];
         }
 
         const transactionParams = [
